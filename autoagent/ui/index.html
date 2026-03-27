@@ -3,127 +3,335 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>JobAgent — Apply automatically</title>
-  <meta name="description" content="AI agent that logs into LinkedIn and applies to jobs on your behalf."/>
+  <title>JobAgent — AI Job Applications</title>
+  <meta name="description" content="AI agent that applies to jobs on LinkedIn automatically."/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:      #0d0d0d;
-      --surface: #161616;
-      --border:  #2a2a2a;
-      --accent:  #7c3aed;
-      --text:    #e8e8e8;
-      --muted:   #555;
-      --green:   #22c55e;
-      --red:     #ef4444;
+      --bg:       #f0ece4;
+      --sidebar:  #e8e3da;
+      --white:    #ffffff;
+      --border:   #d8d2c8;
+      --accent:   #6d28d9;
+      --accent-l: #7c3aed;
+      --text:     #1c1917;
+      --muted:    #78716c;
+      --tag-bg:   #e8e3da;
+      --input-bg: #ffffff;
+      --pill:     #ddd8d0;
     }
 
     body {
       font-family: 'Inter', sans-serif;
       background: var(--bg);
       color: var(--text);
-      min-height: 100vh;
+      height: 100vh;
       display: flex;
-      justify-content: center;
-      padding: 48px 16px 80px;
+      overflow: hidden;
     }
 
-    .wrap {
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: 220px;
+      flex-shrink: 0;
+      background: var(--sidebar);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 16px 12px;
+      overflow-y: auto;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 8px;
+      margin-bottom: 6px;
+    }
+
+    .logo-icon {
+      width: 28px; height: 28px;
+      background: linear-gradient(135deg, #6d28d9, #a855f7);
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      color: white;
+      font-size: 15px;
+    }
+
+    .logo-text {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .sidebar-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
       width: 100%;
-      max-width: 480px;
+      padding: 8px 10px;
+      background: none;
+      border: none;
+      border-radius: 8px;
+      color: var(--muted);
+      font-family: inherit;
+      font-size: 13px;
+      cursor: pointer;
+      text-align: left;
+      transition: background 0.15s, color 0.15s;
     }
+    .sidebar-btn:hover { background: var(--border); color: var(--text); }
+    .sidebar-btn.active { background: var(--white); color: var(--text); }
 
-    /* Header */
-    .header { margin-bottom: 40px; }
-    .header h1 { font-size: 20px; font-weight: 600; letter-spacing: -0.3px; }
-    .header p  { color: var(--muted); font-size: 13px; margin-top: 4px; }
+    .sidebar-icon { font-size: 14px; opacity: 0.7; }
 
-    /* Section label */
-    .label {
-      font-size: 11px;
-      font-weight: 500;
+    .sidebar-section {
+      font-size: 10px;
+      font-weight: 600;
       color: var(--muted);
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 0.8px;
+      padding: 12px 10px 4px;
+    }
+
+    .sidebar-history {
+      font-size: 12px;
+      color: var(--muted);
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: background 0.15s;
+    }
+    .sidebar-history:hover { background: var(--border); color: var(--text); }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+
+    .user-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .user-row:hover { background: var(--border); }
+
+    .avatar {
+      width: 28px; height: 28px;
+      background: linear-gradient(135deg, #6d28d9, #a855f7);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: white;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .user-info { flex: 1; min-width: 0; }
+    .user-name { font-size: 12px; font-weight: 500; }
+    .user-plan { font-size: 10px; color: var(--muted); }
+
+    /* ── MAIN ── */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow-y: auto;
+      padding: 0 16px 60px;
+    }
+
+    .topbar {
+      width: 100%;
+      max-width: 680px;
+      display: flex;
+      justify-content: flex-end;
+      padding: 14px 0 0;
+    }
+
+    .upgrade-pill {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .upgrade-pill a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    /* Center content */
+    .center {
+      flex: 1;
+      width: 100%;
+      max-width: 680px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px 0 10px;
+    }
+
+    .greeting {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    .greeting-icon {
+      font-size: 32px;
+      filter: drop-shadow(0 2px 6px rgba(109,40,217,0.3));
+    }
+
+    .greeting h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.5px;
+    }
+
+    /* ── INPUT CARD ── */
+    .input-card {
+      width: 100%;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px 20px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+
+    .field { margin-bottom: 0; }
+
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+
+    input[type=email], input[type=password], input[type=url], input[type=number], textarea {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 10px 13px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 13.5px;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    input:focus, textarea:focus {
+      border-color: var(--accent-l);
+      box-shadow: 0 0 0 2px rgba(109,40,217,0.12);
+      background: white;
+    }
+
+    textarea {
+      resize: none;
+      height: 90px;
+      line-height: 1.55;
       margin-bottom: 10px;
     }
 
-    /* Inputs */
-    .group { margin-bottom: 24px; }
-
-    input, textarea {
-      width: 100%;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 11px 14px;
-      color: var(--text);
-      font-family: inherit;
-      font-size: 14px;
-      outline: none;
-      transition: border-color 0.15s;
-    }
-    input:focus, textarea:focus { border-color: var(--accent); }
-    textarea { resize: vertical; min-height: 110px; line-height: 1.6; }
-
-    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-
-    /* Counter */
-    .counter {
+    .card-bottom {
       display: flex;
       align-items: center;
-      gap: 10px;
+      justify-content: space-between;
+      margin-top: 10px;
     }
-    .counter input {
-      width: 64px;
+
+    .jobs-ctrl {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .jobs-ctrl span {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .jobs-ctrl input {
+      width: 52px;
       text-align: center;
-      font-size: 16px;
+      padding: 7px;
+      font-size: 14px;
       font-weight: 600;
-      padding: 10px 8px;
+      margin: 0;
     }
-    .counter-desc { font-size: 13px; color: var(--muted); }
-    .ctr-btn {
-      background: var(--surface);
+
+    .ctr {
+      background: var(--tag-bg);
       border: 1px solid var(--border);
       border-radius: 6px;
-      color: var(--text);
-      font-size: 16px;
-      width: 32px;
-      height: 32px;
+      color: var(--muted);
+      font-size: 15px;
+      width: 28px; height: 28px;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: flex; align-items: center; justify-content: center;
       transition: background 0.15s;
     }
-    .ctr-btn:hover { background: var(--border); }
+    .ctr:hover { background: var(--border); }
 
-    /* Divider */
-    hr { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
-
-    /* Button */
-    .btn {
-      width: 100%;
-      padding: 13px;
+    .send-btn {
       background: var(--accent);
       border: none;
-      border-radius: 8px;
-      color: #fff;
+      border-radius: 9px;
+      padding: 9px 18px;
+      color: white;
       font-family: inherit;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 600;
       cursor: pointer;
       transition: opacity 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
-    .btn:hover:not(:disabled) { opacity: 0.88; }
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .send-btn:hover:not(:disabled) { opacity: 0.88; }
+    .send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-    /* Log */
-    .log-wrap { margin-top: 28px; display: none; }
-    .log-wrap.show { display: block; }
+    /* ── PILLS ── */
+    .pills {
+      display: flex;
+      gap: 8px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .pill {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      padding: 7px 14px;
+      font-size: 12px;
+      color: var(--muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: background 0.15s, color 0.15s;
+    }
+    .pill:hover { background: var(--border); color: var(--text); }
+
+    /* ── LOG PANEL ── */
+    .log-panel {
+      width: 100%;
+      max-width: 680px;
+      display: none;
+      margin-top: 20px;
+    }
+    .log-panel.show { display: block; }
 
     .log-header {
       display: flex;
@@ -132,121 +340,168 @@
       margin-bottom: 8px;
     }
 
-    .dot {
+    .log-label { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; }
+
+    .live-badge {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .live-dot {
       width: 6px; height: 6px;
-      background: var(--green);
+      background: #22c55e;
       border-radius: 50%;
       animation: blink 1.2s infinite;
     }
-    @keyframes blink { 50% { opacity: 0.3; } }
+    @keyframes blink { 50% { opacity: 0.2; } }
 
     .log-box {
-      background: var(--surface);
+      background: var(--white);
       border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 16px;
-      height: 280px;
+      border-radius: 12px;
+      padding: 14px 16px;
+      height: 220px;
       overflow-y: auto;
-      font-size: 12.5px;
       font-family: 'Courier New', monospace;
-      line-height: 1.85;
+      font-size: 12px;
+      line-height: 1.9;
     }
 
-    .l { animation: fadeIn 0.2s; }
-    .l-ok   { color: var(--green); }
-    .l-err  { color: var(--red); }
-    .l-dim  { color: var(--muted); }
+    .ll { animation: fi 0.2s; }
+    .ll-ok  { color: #16a34a; }
+    .ll-err { color: #dc2626; }
+    .ll-dim { color: #a8a29e; }
+    @keyframes fi { from { opacity: 0; } to { opacity: 1; } }
 
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-    /* Stats */
-    .stats {
+    .stats-row {
       display: flex;
-      gap: 12px;
-      margin-top: 14px;
+      gap: 10px;
+      margin-top: 10px;
     }
-    .stat {
+
+    .sbox {
       flex: 1;
-      background: var(--surface);
+      background: var(--white);
       border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 12px;
+      border-radius: 10px;
+      padding: 12px 14px;
       text-align: center;
     }
-    .stat-n { font-size: 22px; font-weight: 600; }
-    .stat-l { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .sn { font-size: 20px; font-weight: 600; }
+    .sl { font-size: 10px; color: var(--muted); margin-top: 1px; text-transform: uppercase; letter-spacing: 0.5px; }
 
     ::-webkit-scrollbar { width: 4px; }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    @media (max-width: 640px) {
+      .sidebar { display: none; }
+      .field-row { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
-<div class="wrap">
 
-  <div class="header">
-    <h1>JobAgent</h1>
-    <p>Paste your profile. Walk away. Agent applies for you.</p>
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-icon">⚡</div>
+    <span class="logo-text">JobAgent</span>
   </div>
 
-  <!-- Credentials -->
-  <div class="group">
-    <div class="label">LinkedIn Login</div>
-    <div class="row" style="margin-bottom:10px;">
-      <input type="email" id="email" placeholder="Email"/>
-      <input type="password" id="password" placeholder="Password"/>
-    </div>
-    <input type="url" id="linkedin-url" placeholder="https://linkedin.com/in/your-name"/>
-  </div>
+  <button class="sidebar-btn active" onclick="resetForm()">
+    <span class="sidebar-icon">✦</span> New Session
+  </button>
+  <button class="sidebar-btn">
+    <span class="sidebar-icon">🔍</span> Search history
+  </button>
+  <button class="sidebar-btn">
+    <span class="sidebar-icon">⚙️</span> Settings
+  </button>
 
-  <hr/>
+  <div class="sidebar-section">Recent</div>
+  <div class="sidebar-history">UI/UX Designer jobs — 10 applied</div>
+  <div class="sidebar-history">Product Designer at startups</div>
+  <div class="sidebar-history">Freelance design roles</div>
+  <div class="sidebar-history">Remote design positions</div>
 
-  <!-- Resume -->
-  <div class="group">
-    <div class="label">Your Resume / Profile</div>
-    <textarea id="resume" placeholder="Role: UI/UX Designer&#10;Skills: Figma, Adobe XD, Prototyping&#10;Experience: 1 year at XYZ Studio&#10;Education: B.Des 2024"></textarea>
-  </div>
-
-  <hr/>
-
-  <!-- Job count -->
-  <div class="group">
-    <div class="label">Jobs to Apply</div>
-    <div class="counter">
-      <button class="ctr-btn" onclick="adj(-5)">−</button>
-      <input type="number" id="num" value="10" min="1" max="50"/>
-      <button class="ctr-btn" onclick="adj(5)">+</button>
-      <span class="counter-desc">Easy Apply jobs</span>
+  <div class="sidebar-footer">
+    <div class="user-row">
+      <div class="avatar">AK</div>
+      <div class="user-info">
+        <div class="user-name">Aatif Khan</div>
+        <div class="user-plan">Free plan</div>
+      </div>
     </div>
   </div>
+</aside>
 
-  <button class="btn" id="btn" onclick="launch()">Launch Agent</button>
+<!-- MAIN -->
+<main class="main">
+  <div class="topbar">
+    <span class="upgrade-pill">Free plan · <a href="#">Upgrade</a></span>
+  </div>
 
-  <!-- Live output -->
-  <div class="log-wrap" id="logwrap">
+  <div class="center">
+    <div class="greeting">
+      <span class="greeting-icon">⚡</span>
+      <h1>Find your next role, Aatif</h1>
+    </div>
+
+    <!-- INPUT CARD -->
+    <div class="input-card">
+      <div class="field-row">
+        <input type="email" id="email" placeholder="LinkedIn email"/>
+        <input type="password" id="password" placeholder="Password"/>
+      </div>
+      <input type="url" id="linkedin-url" placeholder="https://linkedin.com/in/your-name" style="margin-bottom:10px;"/>
+      <textarea id="resume" placeholder="Your role, skills & experience — e.g. UI/UX Designer · Figma, Adobe XD · 1yr internship at XYZ..."></textarea>
+
+      <div class="card-bottom">
+        <div class="jobs-ctrl">
+          <button class="ctr" onclick="adj(-1)">−</button>
+          <input type="number" id="num" value="10" min="1" max="50"/>
+          <button class="ctr" onclick="adj(1)">+</button>
+          <span>jobs to apply</span>
+        </div>
+        <button class="send-btn" id="btn" onclick="launch()">
+          Launch ↗
+        </button>
+      </div>
+    </div>
+
+    <!-- PILLS -->
+    <div class="pills">
+      <div class="pill" onclick="setKeyword('UI/UX Designer')">🎨 Design</div>
+      <div class="pill" onclick="setKeyword('Product Designer')">📱 Product</div>
+      <div class="pill" onclick="setKeyword('Graphic Designer')">✏️ Graphic</div>
+      <div class="pill" onclick="setKeyword('Remote Designer')">🌍 Remote</div>
+      <div class="pill" onclick="setKeyword('Freelance Designer')">💼 Freelance</div>
+    </div>
+  </div>
+
+  <!-- LOG PANEL -->
+  <div class="log-panel" id="logpanel">
     <div class="log-header">
-      <div class="label" style="margin:0">Live Feed</div>
-      <div style="display:flex;align-items:center;gap:6px;">
-        <div class="dot" id="dot"></div>
-        <span id="status-text" style="font-size:12px;color:var(--muted)">Running</span>
+      <span class="log-label">Live Agent Feed</span>
+      <div class="live-badge">
+        <div class="live-dot" id="livedot"></div>
+        <span id="livestatus">Running</span>
       </div>
     </div>
-    <div class="log-box" id="log"></div>
-    <div class="stats">
-      <div class="stat">
-        <div class="stat-n" id="n-applied" style="color:var(--green)">0</div>
-        <div class="stat-l">Applied</div>
-      </div>
-      <div class="stat">
-        <div class="stat-n" id="n-skipped" style="color:var(--muted)">0</div>
-        <div class="stat-l">Skipped</div>
-      </div>
+    <div class="log-box" id="logbox"></div>
+    <div class="stats-row">
+      <div class="sbox"><div class="sn" id="n-applied" style="color:#16a34a">0</div><div class="sl">Applied</div></div>
+      <div class="sbox"><div class="sn" id="n-skipped" style="color:#a8a29e">0</div><div class="sl">Skipped</div></div>
+      <div class="sbox"><div class="sn" id="n-status" style="font-size:13px;color:#a8a29e">Idle</div><div class="sl">Status</div></div>
     </div>
   </div>
+</main>
 
-</div>
 <script>
-  // Point to backend — change this if deploying remotely
-  const API = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  const API = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
     ? 'http://localhost:8001'
     : 'https://job-hunting-agent-production-b9a5.up.railway.app';
 
@@ -257,21 +512,37 @@
     el.value = Math.max(1, Math.min(50, +el.value + d));
   }
 
+  function setKeyword(kw) {
+    const r = document.getElementById('resume');
+    if (!r.value) r.value = `Role: ${kw}\nSkills: Figma, Adobe XD, Prototyping\nExperience: `;
+    document.getElementById('linkedin-url').focus();
+  }
+
+  function resetForm() {
+    document.getElementById('email').value = '';
+    document.getElementById('password').value = '';
+    document.getElementById('linkedin-url').value = '';
+    document.getElementById('resume').value = '';
+    document.getElementById('num').value = '10';
+    document.getElementById('logpanel').classList.remove('show');
+    document.getElementById('btn').disabled = false;
+    document.getElementById('btn').textContent = 'Launch ↗';
+  }
+
   function cls(msg) {
-    if (/✅|Applied/.test(msg)) return 'l-ok';
-    if (/❌|Error|Failed/.test(msg)) return 'l-err';
-    if (/⏭|⚠️|Skipped/.test(msg)) return 'l-dim';
+    if (/✅|Applied/.test(msg)) return 'll-ok';
+    if (/❌|Error|Failed/.test(msg)) return 'll-err';
+    if (/⏭|⚠️|Skipped/.test(msg)) return 'll-dim';
     return '';
   }
 
   function addLine(msg) {
-    const box = document.getElementById('log');
+    const box = document.getElementById('logbox');
     const d = document.createElement('div');
-    d.className = `l ${cls(msg)}`;
+    d.className = `ll ${cls(msg)}`;
     d.textContent = msg;
     box.appendChild(d);
     box.scrollTop = box.scrollHeight;
-
     const m = msg.match(/\[(\d+)\//);
     if (m) { applied = +m[1]; document.getElementById('n-applied').textContent = applied; }
     if (/Skipped/.test(msg)) { skipped++; document.getElementById('n-skipped').textContent = skipped; }
@@ -283,22 +554,22 @@
     const url    = document.getElementById('linkedin-url').value.trim();
     const resume = document.getElementById('resume').value.trim();
     const n      = +document.getElementById('num').value;
+    if (!email || !pass || !url || !resume) { alert('Please fill in all fields.'); return; }
 
-    if (!email || !pass || !url || !resume) { alert('Fill in all fields.'); return; }
-
-    document.getElementById('logwrap').classList.add('show');
-    document.getElementById('log').innerHTML = '';
+    const panel = document.getElementById('logpanel');
+    panel.classList.add('show');
+    document.getElementById('logbox').innerHTML = '';
     applied = skipped = 0;
     document.getElementById('n-applied').textContent = '0';
     document.getElementById('n-skipped').textContent = '0';
-    document.getElementById('status-text').textContent = 'Running';
-    document.getElementById('dot').style.background = 'var(--green)';
+    document.getElementById('n-status').textContent = '🟢 On';
+    document.getElementById('livestatus').textContent = 'Running';
 
     const btn = document.getElementById('btn');
     btn.disabled = true;
-    btn.textContent = 'Agent running…';
+    btn.textContent = 'Running…';
 
-    addLine('Starting agent…');
+    addLine('🤖 Agent starting…');
 
     try {
       const res = await fetch(`${API}/run`, {
@@ -312,21 +583,19 @@
       es.onmessage = e => {
         if (e.data === '__DONE__') {
           es.close();
-          document.getElementById('status-text').textContent = 'Done';
-          document.getElementById('dot').style.animation = 'none';
-          document.getElementById('dot').style.background = '#555';
+          document.getElementById('livestatus').textContent = 'Done';
+          document.getElementById('livedot').style.cssText = 'animation:none;background:#a8a29e';
+          document.getElementById('n-status').textContent = '✅ Done';
           btn.disabled = false;
-          btn.textContent = 'Launch Agent';
-        } else {
-          addLine(e.data);
-        }
+          btn.textContent = 'Launch ↗';
+        } else { addLine(e.data); }
       };
-      es.onerror = () => { addLine('Connection lost.'); es.close(); btn.disabled = false; btn.textContent = 'Launch Agent'; };
-    } catch (e) {
-      addLine(`Error: ${e.message}`);
-      addLine('Is the backend running on port 8001?');
+      es.onerror = () => { addLine('Connection lost.'); es.close(); btn.disabled = false; btn.textContent = 'Launch ↗'; };
+    } catch(e) {
+      addLine(`Cannot reach backend: ${e.message}`);
+      addLine('▸ Run locally: cd autoagent && python -m uvicorn server:app --port 8001');
       btn.disabled = false;
-      btn.textContent = 'Launch Agent';
+      btn.textContent = 'Launch ↗';
     }
   }
 </script>
