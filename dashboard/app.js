@@ -3,7 +3,7 @@
 ════════════════════════════════════════════ */
 
 // ── CONFIG ──────────────────────────────────
-const DEFAULT_API = 'http://localhost:8000';
+const DEFAULT_API = 'https://job-hunting-agent-production-b9a5.up.railway.app';
 let API_BASE = localStorage.getItem('api_base') || DEFAULT_API;
 let allJobs = [];
 
