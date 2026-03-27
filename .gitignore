@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.env
+jobs_data.json
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+.DS_Store
+node_modules/
